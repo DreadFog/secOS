@@ -23,6 +23,7 @@ typedef multiboot_memory_map_t  memory_map_t;
 #define MBH_FLAGS               (MBI_FLAG_MEM|MBI_FLAG_BDEV)
 
 #define __mbh__                 __attribute__ ((section(".mbh"),aligned(4)))
+#define __stack__                 __attribute__ ((section(".stack"),aligned(16)))
 
 /*
 ** Functions
