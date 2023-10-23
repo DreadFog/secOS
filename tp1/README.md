@@ -121,8 +121,8 @@ Note : L'implémentation de `_memcpy8()` de SECOS repose sur l'instruction x86
  - **limite 32 octets**
 
 **Q10 : Charger le sélecteur de segment "es" de manière à adresser ce nouveau
-  descripteur de données puis ré-exécuter la copie ` _memcpy8(dst, src,
-  32);`. Que se passe-t-il ? Pourquoi n'y a-t-il pas de faute mémoire alors
+  descripteur de données puis ré-exécuter la copie ` _memcpy8(dst, src,  32);`. 
+  Que se passe-t-il ? Pourquoi n'y a-t-il pas de faute mémoire alors
   que le pointeur `dst` est NULL ?**
 
 **Q11 : De même, effectuer à présent une copie de 64 octets. Que se passe-t-il ? Pourquoi ?**

@@ -102,7 +102,7 @@ typedef union segment_descriptor
 
    } __attribute__((packed));
 
-   raw64_t;
+   raw64_t raw;
 
 } __attribute__((packed)) seg_desc_t;
 

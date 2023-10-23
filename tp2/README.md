@@ -95,7 +95,7 @@ qu'elle puisse gérer l'exception #BP. Le but est de ne pas modifier
 L'idée est de réécrire `bp_handler` en assembleur inline pour éviter l'écueil
 de l'essai précédent.
 
-**Q7 : **Au début de `bp_handler`, afficher la valeur stockée en `ebp-4` :**
+**Q7 : Au début de `bp_handler`, afficher la valeur stockée en `ebp-4` :**
 
 ```c
   uint32_t val;
