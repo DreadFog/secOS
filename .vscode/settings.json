@@ -59,6 +59,10 @@
   "files.associations": {
     "info.h": "c",
     "string.h": "c",
-    "any": "c"
-  }
+    "any": "c",
+    "cr.h": "c",
+    "cstdint": "c",
+    "pagemem.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }
