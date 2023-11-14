@@ -11,7 +11,7 @@
       (_dSc_)->type = SEG_DESC_SYS_TSS_AVL_32; \
       (_dSc_)->p = 1;                          \
    })
-void syscall_isr()
+void syscall_isr() // interrupt system routine
 {
    asm volatile(
        "leave ; pusha        \n"
