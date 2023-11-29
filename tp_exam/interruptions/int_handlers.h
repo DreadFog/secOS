@@ -1,3 +1,1 @@
-/*
-Handlers for different interruptions
-*/
+void irq0_handler();

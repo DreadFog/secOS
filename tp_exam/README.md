@@ -37,7 +37,14 @@ Permettre un ordonnancement préemptif de 2 tâches (T1 et T2) en ring 3 :
  - Le gestionnaire de l'interruption 32 (irq0 = horloge) doit vous permettre à chaque interruption de passer de la tâche 1 à la tâche 2 et inversement. Il doit également savoir détecter s'il a interrompu le noyau ou une tâche utilisateur.
  - Une fois la mémoire, les interruptions et les tâches initialisées, le noyau doit activer les interruptions matérielles et effectuer une boucle infinie.
 
+
  ---
+- Pour faire les processus:
+  + définition de la structure "proc_t" permettant de sauvegarder le contexte d'un processus
+  + définition de la structure "proc_list_t" permettant de sauvegarder la liste des processus
+  + Créer un scheduler basé sur un timer qui provoque périodiquement une interruption. Cette interruption fait de la commutation de contexte
+  + Créer une fonction "create_process" qui permet de créer un processus
+  + Créer une fonction "kill_process" qui permet de tuer un processus
 
 ## Astuces
 

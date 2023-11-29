@@ -27,4 +27,5 @@ SECTIONS
    /DISCARD/ : { *(.note* .indent .comment)      } : phsetup
 
    __kernel_end__ = .;
+   .user : { . = ALIGN(4); }
 }
