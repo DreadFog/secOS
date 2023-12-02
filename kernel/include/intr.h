@@ -74,5 +74,7 @@ typedef void (*isr_t)(int_ctx_t*);
 
 void intr_init();
 void intr_hdlr(int_ctx_t*) __regparm__(1);
+void irq0_handler();
+void irq80_handler();
 
 #endif

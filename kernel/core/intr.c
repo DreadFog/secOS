@@ -19,8 +19,16 @@ void intr_init()
    for(i=0 ; i<IDT_NR_DESC ; i++, isr += IDT_ISR_ALGN)
       int_desc(&IDT[i], gdt_krn_seg_sel(1), isr);
 
+
    idtr.desc  = IDT;
    idtr.limit = sizeof(IDT) - 1;
+
+	int_desc_t *tab_int_desc = idtr.desc;
+   // TODO : c'est vraiment gdt_krn_seg_sel(1) ?
+	// Gestion de l'interruption irq0
+	int_desc(&tab_int_desc[32], gdt_krn_seg_sel(1), (offset_t)&irq0_handler);
+	// Gestion de l'interruption irq80
+	int_desc(&tab_int_desc[0x80], gdt_krn_seg_sel(1), (offset_t)&irq80_handler);
    set_idtr(idtr);
 }
 
@@ -60,4 +68,26 @@ void __regparm__(1) intr_hdlr(int_ctx_t *ctx)
       excp_hdlr(ctx);
    else
       debug("ignore IRQ %d\n", vector);
+}
+
+// Handler interruption horloge
+void irq0_handler()
+{
+	asm volatile("pusha \t\n");
+	/* TODO: 
+		- switch tâche 1 <-> tâche 2 
+		- savoir si on a interrompu le noyau ou une tâche utilisateur
+	*/
+	// Rendre la main à tp()
+	asm volatile("iret \t\n");
+}
+
+void irq80_handler()
+{
+	asm volatile("pusha \t\n");
+	uint32_t * counter;
+	asm volatile("mov 8(%%ebp), %0" : "=r"(counter));
+	debug("counter value : %d", *counter);
+	// Rendre la main à tp()
+	asm volatile("iret \t\n");
 }
