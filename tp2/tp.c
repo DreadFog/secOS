@@ -25,14 +25,14 @@ void bp_trigger()
 
 void tp()
 {
-	// TODO print idtr
+	// print idtr
 
 	idt_reg_t idtr;
 	get_idtr(idtr);
 	int_desc_t *tab_int_desc = idtr.desc;
 	int_desc(&tab_int_desc[3], gdt_krn_seg_sel(1), (offset_t)&bp_handler);
 
-	// TODO call bp_trigger
+	// call bp_trigger
 	/* 	asm volatile("int3 \t\n");
 		debug("oqei_ghqoil\n"); */
 	bp_trigger();

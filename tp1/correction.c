@@ -113,7 +113,6 @@ void tp() {
     my_gdtr.addr = (long unsigned int)my_gdt;
     my_gdtr.limit = sizeof(my_gdt) - 1;
     set_gdtr(my_gdtr);
-    // TODO
     // end Q6
 
     // Q7

@@ -45,7 +45,6 @@ void print_gdt_content(gdt_reg_t gdtr_ptr)
 
 void tp()
 {
-    // TODO
     /*
     Q1
     Rappeler comment fonctionne l'instruction `SGDT` (rôle, paramètres,

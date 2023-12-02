@@ -74,7 +74,7 @@ void __regparm__(1) intr_hdlr(int_ctx_t *ctx)
 void irq0_handler()
 {
 	asm volatile("pusha \t\n");
-	/* TODO: 
+	/* TODO: (doit succéder aux process)
 		- switch tâche 1 <-> tâche 2 
 		- savoir si on a interrompu le noyau ou une tâche utilisateur
 	*/

@@ -27,7 +27,7 @@ void __regparm__(1) syscall_handler(int_ctx_t *ctx)
 
 void userland()
 {
-   // TODO à compléter
+   // à compléter
    uint32_t arg = 0x2023;
    asm volatile("int $48" ::"a"(arg));
    while (1);
