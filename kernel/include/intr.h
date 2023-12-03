@@ -77,4 +77,7 @@ void intr_hdlr(int_ctx_t*) __regparm__(1);
 void irq0_handler();
 void irq80_handler();
 
+
+void associate_syscall_handler(uint32_t syscall_value, uint32_t handler_address);
+
 #endif
