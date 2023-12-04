@@ -7,7 +7,7 @@
 #include <debug.h>
 #define PGD_PROCS_BASE 0x3d0900 // adresse 4 MB, début de la table de PGD
 #define ONE_MB 0xf4240
-#define SHARED_MEM_ADDR 0x0 // TODO (c'est pas la même pour les 2 tâches si ? vu que c'est l'@ virtuelle)
+#define SHARED_MEM_ADDR 0xf42400 // @ Physique du counter à 16 Mb
 #define NB_PGD_ENTRIES 1024
 #define NB_PTB_ENTRIES 1024
 #define MAX_PROCS 2

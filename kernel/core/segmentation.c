@@ -73,19 +73,20 @@ void call_ring_3(void *ring3_code) {
    TODO: create a process list, process 0 will be the kernel, the next available process
    will be associated to the provided ring3 code.
    */
-   while(1){debug("TODO: Stack not retrieved from process 1.\n");}
-    uint32_t   ustack = 0x600000;
-    asm volatile (
-      "push %0 \n" // ss
-      "push %1 \n" // esp pour du ring 3 !
-      "pushf   \n" // eflags
-      "push %2 \n" // cs
-      "push %3 \n" // eip
-      "iret"
-      ::
-       "i"(d3_sel),
-       "m"(ustack),
-       "i"(c3_sel),
-       "r"(ring3_code)
-      );
+   while(1) { debug("TODO: Stack not retrieved from process 1.\n"); }
+
+   uint32_t   ustack = 0x600000;
+   asm volatile (
+   "push %0 \n" // ss
+   "push %1 \n" // esp pour du ring 3 !
+   "pushf   \n" // eflags
+   "push %2 \n" // cs
+   "push %3 \n" // eip
+   "iret"
+   ::
+      "i"(d3_sel),
+      "m"(ustack),
+      "i"(c3_sel),
+      "r"(ring3_code)
+   );
 }
