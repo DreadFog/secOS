@@ -5,7 +5,50 @@
 
 extern info_t *info;
 extern void idt_trampoline();
+extern void handler_IT_timer();
 static int_desc_t IDT[IDT_NR_DESC];
+
+
+
+// Handler interruption horloge
+void irq0_handler()
+{
+   asm volatile("pusha \t\n");
+   /* TODO: (doit succéder aux process)
+      - switch tâche 1 <-> tâche 2
+      - savoir si on a interrompu le noyau ou une tâche utilisateur
+   */
+   // Rendre la main à tp()
+   asm volatile("iret \t\n");
+}
+
+/*
+Fonction récupérant la valeur du syscall et appelant la fonction associée
+Si on voulait ajouter d'autres syscalls, il faudrait avoir une vraie syscall
+table et la routine de syscall_isr devrait être plus complexe
+*/
+void syscall_isr() {
+   asm volatile (
+      "leave ; pusha        \n"
+      "mov %esp, %eax      \n"
+      "call counter_syscall_handler \n"
+      "popa ; iret"
+      );
+}
+
+/*
+Appel système utilisé par le processus écrivant dans la console la valeur du compteur
+*/
+// void __regparm__(1) counter_syscall_handler(int_ctx_t *ctx) {
+void __regparm__(1) counter_syscall_handler() { // removed argument for compilation, TODO
+   asm volatile("pusha \t\n");
+   uint32_t *counter;
+   asm volatile("mov 8(%%ebp), %0" : "=r"(counter));
+   debug("counter value : %d", *counter);
+   // Rendre la main à tp()
+   asm volatile("iret \t\n");
+}
+
 
 void intr_init()
 {
@@ -24,7 +67,7 @@ void intr_init()
 
    int_desc_t *tab_int_desc = idtr.desc;
    // Gestion de l'interruption irq0
-   int_desc(&tab_int_desc[32], gdt_krn_seg_sel(1), (offset_t)&irq0_handler);
+   int_desc(&tab_int_desc[32], gdt_krn_seg_sel(1), (offset_t)&handler_IT_timer);
    // Gestion de l'interruption irq80
    int_desc(&tab_int_desc[0x80], gdt_krn_seg_sel(1), (offset_t)&syscall_isr);
    tab_int_desc[0x80].dpl = 3;
@@ -56,42 +99,4 @@ void __regparm__(1) intr_hdlr(int_ctx_t *ctx)
       excp_hdlr(ctx);
    else
       debug("ignore IRQ %d\n", vector);
-}
-
-// Handler interruption horloge
-void irq0_handler()
-{
-   asm volatile("pusha \t\n");
-   /* TODO: (doit succéder aux process)
-      - switch tâche 1 <-> tâche 2
-      - savoir si on a interrompu le noyau ou une tâche utilisateur
-   */
-   // Rendre la main à tp()
-   asm volatile("iret \t\n");
-}
-
-/*
-Fonction récupérant la valeur du syscall et appelant la fonction associée
-Si on voulait ajouter d'autres syscalls, il faudrait avoir une vraie syscall
-table et la routine de syscall_isr devrait être plus complexe
-*/
-void syscall_isr() {
-   asm volatile (
-      "leave ; pusha        \n"
-      "mov %esp, %eax      \n"
-      "call counter_syscall_handler \n"
-      "popa ; iret"
-      );
-}
-
-/*
-Appel système utilisé par le processus écrivant dans la console la valeur du compteur
-*/
-void __regparm__(1) counter_syscall_handler(int_ctx_t *ctx) {
-   asm volatile("pusha \t\n");
-   uint32_t *counter;
-   asm volatile("mov 8(%%ebp), %0" : "=r"(counter));
-   debug("counter value : %d", *counter);
-   // Rendre la main à tp()
-   asm volatile("iret \t\n");
 }
