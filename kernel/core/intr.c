@@ -8,24 +8,8 @@ extern void idt_trampoline();
 extern void handler_IT_timer();
 static int_desc_t IDT[IDT_NR_DESC];
 
-
-
-// Handler interruption horloge
-void irq0_handler()
-{
-   asm volatile("pusha \t\n");
-   /* TODO: (doit succéder aux process)
-      - switch tâche 1 <-> tâche 2
-      - savoir si on a interrompu le noyau ou une tâche utilisateur
-   */
-   // Rendre la main à tp()
-   asm volatile("iret \t\n");
-}
-
 /*
 Fonction récupérant la valeur du syscall et appelant la fonction associée
-Si on voulait ajouter d'autres syscalls, il faudrait avoir une vraie syscall
-table et la routine de syscall_isr devrait être plus complexe
 */
 void syscall_isr() {
    asm volatile (
@@ -39,14 +23,15 @@ void syscall_isr() {
 /*
 Appel système utilisé par le processus écrivant dans la console la valeur du compteur
 */
-// void __regparm__(1) counter_syscall_handler(int_ctx_t *ctx) {
-void __regparm__(1) counter_syscall_handler() { // removed argument for compilation, TODO
-   asm volatile("pusha \t\n");
+void __regparm__(1) counter_syscall_handler(int_ctx_t *ctx) {
+//void __regparm__(1) counter_syscall_handler() { // removed argument for compilation, TODO
+   /* asm volatile("pusha \t\n");
    uint32_t *counter;
    asm volatile("mov 8(%%ebp), %0" : "=r"(counter));
    debug("counter value : %d", *counter);
-   // Rendre la main à tp()
-   asm volatile("iret \t\n");
+   // Rendre la main à tp() */
+   debug("==================\nSYSCALL eax = 0x%x\n", (unsigned int) ctx->gpr.eax.raw);
+   asm volatile("iret \t\n"); // marche pas comme il faut
 }
 
 
@@ -99,4 +84,11 @@ void __regparm__(1) intr_hdlr(int_ctx_t *ctx)
       excp_hdlr(ctx);
    else
       debug("ignore IRQ %d\n", vector);
+}
+
+// syscalls
+static uint32_t syscall_table[NR_SYS_CALLS];
+
+void associate_syscall_handler(uint32_t syscall_value, uint32_t handler_address){
+   syscall_table[syscall_value] = handler_address;
 }

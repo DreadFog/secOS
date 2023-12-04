@@ -4,6 +4,7 @@
 #include <intr.h>
 #include <time.h>
 #include <asm.h>
+#include <segmentation.h>
 // Pagination
 #include <paging.h>
 
@@ -27,13 +28,19 @@ void __attribute__((section(".user"))) user2() {
 }
 
 void userland() {
-	// TODO
+	// while(1) { debug("userland\n"); }
+	asm volatile ("int $0x80"::"S"(1)); // Test syscall 1
+	debug("After syscall\n");
+	while(1){};
 }
 
 void tp() {
 	// TODO
 	init_paging();
-	init_timer(1000);
-	force_interrupts_on();
+	init_gdt();
+	// ajout du timer, fonctionne
+	/*init_timer(1000);
+	force_interrupts_on();*/
+	call_ring_3(userland);
 	while (1) {}
 }

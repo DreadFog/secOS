@@ -40,6 +40,7 @@ core_obj   :=	entry.o \
 		paging.o \
 		time.o \
 		handler_IT_timer.o \
+		segmentation.o \
 
 objects    := $(addprefix $(CORE), $(core_obj))
 
