@@ -8,32 +8,62 @@ extern void idt_trampoline();
 extern void handler_IT_timer();
 static int_desc_t IDT[IDT_NR_DESC];
 
+// syscalls
+static uint32_t syscall_table[NR_SYS_CALLS];
+
+void associate_syscall_handler(uint32_t syscall_value, uint32_t handler_address)
+{
+   syscall_table[syscall_value] = handler_address;
+}
+
+void init_syscall_table()
+{
+   for (int i = 0; i < NR_SYS_CALLS; i++)
+   {
+      syscall_table[i] = 0;
+   }
+}
+
 /*
 Fonction récupérant la valeur du syscall et appelant la fonction associée
 */
-void syscall_isr() {
-   asm volatile (
-      "leave ; pusha        \n"
-      "mov %esp, %eax      \n"
-      "call counter_syscall_handler \n"
-      "popa ; iret"
-      );
+void syscall_isr()
+{
+   asm volatile(
+       "leave ; pusha        \n"
+       "mov %esp, %eax      \n"
+       "call syscall_finder \n"
+       "popa ; iret");
 }
 
 /*
 Appel système utilisé par le processus écrivant dans la console la valeur du compteur
 */
-void __regparm__(1) counter_syscall_handler(int_ctx_t *ctx) {
-//void __regparm__(1) counter_syscall_handler() { // removed argument for compilation, TODO
-   /* asm volatile("pusha \t\n");
-   uint32_t *counter;
-   asm volatile("mov 8(%%ebp), %0" : "=r"(counter));
-   debug("counter value : %d", *counter);
-   // Rendre la main à tp() */
-   debug("==================\nSYSCALL eax = 0x%x\n", (unsigned int) ctx->gpr.eax.raw);
-   asm volatile("iret \t\n"); // marche pas comme il faut
+void __regparm__(1) syscall_finder(int_ctx_t *ctx)
+{
+   uint32_t syscall_value = ctx->gpr.eax.raw;
+   debug("==================\nSYSCALL eax = 0x%x\n", syscall_value);
+   if (syscall_value < NR_SYS_CALLS)
+   {
+      uint32_t handler_address = syscall_table[syscall_value];
+      if (handler_address != 0)
+      {
+         debug("handler_address = 0x%x\n", handler_address);
+         asm volatile("mov %0, %%eax\n"
+                      "call *%%eax\n"
+                      :
+                      : "r"(handler_address));
+      }
+      else
+      {
+         debug("No handler for syscall 0x%x\n", syscall_value);
+      }
+   }
+   else
+   {
+      debug("No handler for syscall 0x%x\n", syscall_value);
+   }
 }
-
 
 void intr_init()
 {
@@ -84,11 +114,4 @@ void __regparm__(1) intr_hdlr(int_ctx_t *ctx)
       excp_hdlr(ctx);
    else
       debug("ignore IRQ %d\n", vector);
-}
-
-// syscalls
-static uint32_t syscall_table[NR_SYS_CALLS];
-
-void associate_syscall_handler(uint32_t syscall_value, uint32_t handler_address){
-   syscall_table[syscall_value] = handler_address;
 }

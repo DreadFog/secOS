@@ -79,7 +79,7 @@ void irq80_handler();
 
 
 // everything related to syscalls
-#define NR_SYS_CALLS 1
+#define NR_SYS_CALLS 2
 void associate_syscall_handler(uint32_t syscall_value, uint32_t handler_address);
-
+void init_syscall_table();
 #endif
