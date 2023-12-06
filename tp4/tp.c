@@ -1,85 +1,120 @@
 /* GPLv2 (c) Airbus */
 #include <debug.h>
-#include <cr.h>
 #include <pagemem.h>
-#include <segmem.h>
+#include <string.h>
+#include <cr.h>
 
-#define ten_msb(x) (x >> 22)
-#define ten_midsb(x)  ((x << 10) >> 22)
-#define twelve_lsb(x) (x & 0xFFFFFF)
+void tp() {
+	// Q1
+	cr3_reg_t cr3 = {.raw = get_cr3()};
+	debug("CR3 = 0x%x\n", (unsigned int) cr3.raw);
+	// end Q1
 
-void tp()
-{
-    debug("tp\n");
-  // Q1
-    uint32_t cr3 = {.raw = get_cr3()};
-  
-    printf("CR3: 0x%x\n", cr3.addr);
+	// Q2                              // 0x001 (10bits) -- 0x300 (10bits) -- 0x000 (12 bits)
+	pde32_t *pgd = (pde32_t*)0x600000; // 00 0000 0001   -- 10 0000 0000   -- 0000 0000 0000
+	set_cr3((uint32_t)pgd);
+	// end Q2
 
-  // Q2
-  // cf https://en.wikipedia.org/wiki/Control_register#Control_registers_in_Intel_x86_series
-  uint32_t pde_addr = 0x600000;
-  cr3 =  (cr3_reg_t) ((raw32_t) pde_addr);
-  set_cr3(cr3);
-    printf("CR3: 0x%x\n", get_cr3());
-  
-  // Q3
-  // activation de la pagination
-    uint32_t cr0 = get_cr0();
-  cr0 |= 1 << 31;
-  // set_cr0(cr0);   // plante car on n'a initialisé que le premier niveau d'indirection de la pagination?  
+	// Q3 
+	// uint32_t cr0 = get_cr0();
+	// set_cr0(cr0|CR0_PG);
+	// encore un peu tôt d'activer la pagination à ce stade :)
+	// notamment car le pgd est vide !
+	// end Q3
 
-  // Q4
-  uint32_t pte_addr =  0x601000;  // size(PGD = 0x1000)
-  pte32_t *pte = (pte32_t*) pte_addr; // PDE at 0x600000
+	// Q4
+	pte32_t *ptb = (pte32_t*)0x601000;
+	// end Q4
 
-  // Q5
-  /*
-  En-têtes de programme :
-                Type           Décalage Adr. vir.  Adr.phys.  T.Fich. T.Mém.  Fan Alignement
-                LOAD           0x000094 0x00300000 0x00300000 0x0000c 0x0000c RWE 0x4
-                LOAD           0x000000 0x00300010 0x00300010 0x00000 0x02000 RW  0x10
-                LOAD           0x0000b0 0x00302010 0x00302010 0x02900 0x03530 RWE 0x20
-  */
-  pde32_t *pde = (pde32_t*) pde_addr; // PDE at 0x600000
-  // on a une superbe PDE a l'adresse demandee
-  uint32_t add0 = 0x00300000;
-  uint32_t add1 = 0x00300010;
-  uint32_t add2 = 0x00302010;
+	// Q5
+	for(int i=0;i<1024;i++) {
+	 	pg_set_entry(&ptb[i], PG_KRN|PG_RW, i);
+	}
+	memset((void*)pgd, 0, PAGE_SIZE);
+	pg_set_entry(&pgd[0], PG_KRN|PG_RW, page_nr(ptb));
+ 	// uint32_t cr0 = get_cr0(); // enable paging
+	// set_cr0(cr0|CR0_PG);
+	// end Q5
 
-  pde[ten_msb(add0)].addr = pte_addr >> 10;
-  pte[ten_midsb(add0)].addr = add0 >> 12;
-  pte[ten_midsb(add1)].addr = add1 >> 12;
-  pte[ten_midsb(add2)].addr = add2 >> 12;
-  /*
-  pte[ten_midsb(add0)].addr = add0 - twelve_lsb(add0);
-  pte[ten_midsb(add1)].addr = add1 - twelve_lsb(add1);
-  pte[ten_midsb(add2)].addr = add2 - twelve_lsb(add2);
-  */
+	// Q6
+	// debug("PTB[1] = %p\n", ptb[1].raw);
+	// res Q6
+	/* IDT event
+	 . int    #14
+	 . error  0x0
+	 . cs:eip 0x8:0x304206
+	 . ss:esp 0x0:0x303a52
+	 . eflags 0x2
 
-  // inch ?
-  set_cr0(cr0);
+	- GPR
+	eax     : 0x601004
+	ecx     : 0x0
+	edx     : 0x0
+	ebx     : 0x60
+	esp     : 0x301fac
+	ebp     : 0x301fe8
+	esi     : 0x2bfc2
+	edi     : 0x2bfc3
 
+	Exception: Page fault
+	#PF details: p:0 wr:0 us:0 id:0 addr 0x601004
+	cr0 = 0x80000011
+	cr4 = 0x0
 
+	-= Stack Trace =-
+	0x30305e
+	0x303020
+	0x8c85
+	0x72bf0000
+	fatal exception !
 
-/*
-Notes:
-PGT_d[t].(base+p) = a_phy
+	#PF car l'adresse virtuelle n'est pas mappée
+	*/
+	// solution:
+	pte32_t *ptb2 = (pte32_t*)0x602000;
+	for(int i=0;i<1024;i++) {
+		pg_set_entry(&ptb2[i], PG_KRN|PG_RW, i+1024);
+	}
+	pg_set_entry(&pgd[1], PG_KRN|PG_RW, page_nr(ptb2));
 
-ex: 
-pour ad = 0x00300123
-d = 0 -> le max c'est 0xFFF
-t = 0x300 -> le max c'est 0x3FF
-p = 0x123 -> le max c'est 0xFFF
+	uint32_t cr0 = get_cr0(); // enable paging
+	set_cr0(cr0|CR0_PG);
+	// debug("PTB[1] = %p\n", ptb[1].raw);
+	// end Q6
 
-dont on utilise PGD[0] qui pointe sur une table des pages
-à cette table des pages à l'index t, on met (0<<22)|(0x300<<12), càd (d<<10+12) | (t <<10)
+	// Q7
+	pte32_t  *ptb3    = (pte32_t*)0x603000;
+	uint32_t *target  = (uint32_t*)0xc0000000;
+	int      pgd_idx = pd32_idx(target);
+	int      ptb_idx = pt32_idx(target);
+	debug("%d %d\n", pgd_idx, ptb_idx);
+	/**/
+	memset((void*)ptb3, 0, PAGE_SIZE);
+	pg_set_entry(&ptb3[ptb_idx], PG_KRN|PG_RW, page_nr(pgd));
+	pg_set_entry(&pgd[pgd_idx], PG_KRN|PG_RW, page_nr(ptb3));
+	/**/
+	debug("PGD[0] = 0x%x | target = 0x%x\n", (unsigned int) pgd[0].raw, (unsigned int) *target);
 
-penser à memset les zones à zéro c'est pas bête!
+	/*uint32_t cr0 = get_cr0(); // enable paging
+	set_cr0(cr0|CR0_PG);*/
+	// end Q7
 
-*/
+	// Q8
+	char *v1 = (char*)0x700000; // 7 memoire partagee
+	char *v2 = (char*)0x7ff000;
+	ptb_idx = pt32_idx(v1);
+	pg_set_entry(&ptb2[ptb_idx], PG_KRN|PG_RW, 2);
+	ptb_idx = pt32_idx(v2);
+	pg_set_entry(&ptb2[ptb_idx], PG_KRN|PG_RW, 2);
+	debug("%p = %s | %p = %s\n", v1, v1, v2, v2);
+	// uint32_t cr0 = get_cr0(); // enable paging
+	// set_cr0(cr0|CR0_PG);
+	// end Q8
 
-
+	// Q9
+    *target = 0; 
+    //invalidate(target); // vidage des caches 
+	// end Q9
 
 
 }

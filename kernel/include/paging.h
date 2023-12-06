@@ -5,14 +5,15 @@
 #include <pagemem.h>
 #include <string.h>
 #include <debug.h>
-#define PGD_PROCS_BASE 0x3d0900 // adresse 4 MB, début de la table de PGD
-#define ONE_MB 0xf4240
-#define SHARED_MEM_ADDR 0xf42400 // @ Physique du counter à 16 Mb
-#define NB_PGD_ENTRIES 1024
-#define NB_PTB_ENTRIES 1024
+#define PGD_PROCS_BASE PG_4M_SIZE // adresse 4 MB, début de la table de PGD 1 << 25
+#define PROCS_STACK_HEAP_BASE PGD_PROCS_BASE * 2 // 8 Mb
+#define KERNEL_STACK_BASE PGD_PROCS_BASE * 3 // 12 Mb
+#define ONE_MB PG_4M_SIZE / 4 // 1 << 23
+#define SHARED_MEM_ADDR PROCS_STACK_HEAP_BASE // 12 Mb
+#define PROCS_PHY_MEM_BASE PG_4M_SIZE * 4 // 16 Mb, 20 Mb, etc...
+#define PROCS_PHY_MEM_SIZE PG_4M_SIZE
 #define MAX_PROCS 2
-#define KERNEL_STACK_BASE 0xb71b00 // 12 Mb
-#define PROCS_STACK_HEAP_BASE 0x7a1200 // 8 Mb
+
 /*
 Function that will initialize paging in the OS.
     - PGD pre-allocation for the kernel + MAX_PROCS user processes (more processes would simply require more memory allocated to the kernel)

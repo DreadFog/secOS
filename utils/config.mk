@@ -42,7 +42,7 @@ core_obj   :=	entry.o \
 		handler_IT_timer.o \
 		segmentation.o \
 		tests.o \
-		proc.o \
+		# proc.o \
 
 objects    := $(addprefix $(CORE), $(core_obj))
 
