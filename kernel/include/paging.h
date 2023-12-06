@@ -11,7 +11,8 @@
 #define NB_PGD_ENTRIES 1024
 #define NB_PTB_ENTRIES 1024
 #define MAX_PROCS 2
-
+#define KERNEL_STACK_BASE 0xb71b00 // 12 Mb
+#define PROCS_STACK_HEAP_BASE 0x7a1200 // 8 Mb
 /*
 Function that will initialize paging in the OS.
     - PGD pre-allocation for the kernel + MAX_PROCS user processes (more processes would simply require more memory allocated to the kernel)

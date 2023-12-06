@@ -34,21 +34,24 @@ Tests syscalls
 
 void userland_test_syscall() {
 	// asm volatile("mov %eax, %cr0"); // crashes, as we are in ring 3
-	debug("Before syscall\n");
+	// debug("Before syscall\n");
 	asm volatile ("int $0x80"::"S"(1)); // Test syscall 1
-	debug("After syscall\n");
+	// debug("After syscall\n");
 	// asm volatile("mov %eax, %cr0"); //back to ring 3, so it crashes
 	while(1){};
 }
 
 void test_syscall_function() {
 	// asm volatile("mov %eax, %cr0"); / works, as we are in ring 0
-	debug("test_syscall_function\n");
-	debug("I am executed in ring 0\n");
+	//debug("test_syscall_function\n");
+	// debug("I am executed in ring 0\n");
 }
 
 void test_syscall(void)
 {
+	debug("====================================\n");
+	debug("Test syscall\n");
+	debug("====================================\n");
     default_configuration();
     associate_syscall_handler(1, (uint32_t)test_syscall_function);
     call_ring_3(userland_test_syscall);

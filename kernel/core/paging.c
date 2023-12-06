@@ -38,4 +38,8 @@ void init_paging() {
         }
     }
     set_cr3(cr3);
+
+    // enable paging
+	uint32_t cr0 = get_cr0();
+	set_cr0(cr0|CR0_PG);
 }

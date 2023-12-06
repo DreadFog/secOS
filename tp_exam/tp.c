@@ -7,6 +7,7 @@
 #include <segmentation.h>
 #include <paging.h>
 #include <tests.h>
+// #include <proc.h>
 // counter print syscall
 void sys_counter(uint32_t *counter) {
   	// counter est une @virtuelle ring 3
@@ -40,7 +41,7 @@ void tp() {
 	// ajout du timer, fonctionne
 	// init_timer(1000);
 	// force_interrupts_on();
-	// test_syscall();
-	test_call_ring0_from_ring3();
+	test_syscall();
+	// test_call_ring0_from_ring3();
 	while (1) {}
 }
