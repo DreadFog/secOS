@@ -1,5 +1,4 @@
 #include <segmentation.h>
-#include <debug.h>
 #define c0_idx 1
 #define d0_idx 2
 #define c3_idx 3
@@ -75,6 +74,7 @@ void call_ring_3(void *ring3_code)
    TODO: create a process list, process 0 will be the kernel, the next available process
    will be associated to the provided ring3 code.
    */
+
    // while(1) { debug("TODO: Stack not retrieved from process 1.\n"); }
    uint32_t ustack = 0x600000;
 
@@ -87,7 +87,9 @@ void call_ring_3(void *ring3_code)
    TSS.s0.ss = d0_sel;
    tss_dsc(&GDT[ts_idx], (offset_t)&TSS);
    set_tr(ts_sel);
-
+   // Test: Change GDT to the first process GDT
+   /* uint32_t gdt_proc_1 = PGD_PROCS_BASE + PAGE_SIZE;
+   set_cr3(gdt_proc_1); */
    asm volatile(
        "push %0 \n" // ss
        "push %1 \n" // esp pour du ring 3 !

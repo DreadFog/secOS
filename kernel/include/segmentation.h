@@ -1,5 +1,6 @@
 #include <segmem.h>
-
+#include <debug.h>
+#include <paging.h>
 
 // Publicly accessible functions
 
