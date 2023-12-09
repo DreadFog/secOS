@@ -31,6 +31,7 @@ void user2() {
 
 void default_configuration() {
 	init_gdt();
+	init_tss();
     init_paging();
 	init_syscall_table();
 }

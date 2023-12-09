@@ -3,17 +3,21 @@
 #define d0_idx 2
 #define c3_idx 3
 #define d3_idx 4
-#define ts_idx 5
+#define ts_krn_idx 5
+#define ts_proc1_idx 6
+#define ts_proc2_idx 7
+
 
 #define c0_sel gdt_krn_seg_sel(c0_idx)
 #define d0_sel gdt_krn_seg_sel(d0_idx)
 #define c3_sel gdt_usr_seg_sel(c3_idx)
 #define d3_sel gdt_usr_seg_sel(d3_idx)
-#define ts_sel gdt_krn_seg_sel(ts_idx)
+#define ts_krn_sel gdt_krn_seg_sel(ts_krn_idx)
+#define ts_proc1_sel gdt_usr_seg_sel(ts_proc1_idx)
+#define ts_proc2_sel gdt_usr_seg_sel(ts_proc2_idx)
 
-seg_desc_t GDT[6];
-tss_t TSS;
-
+seg_desc_t GDT[8];
+tss_t TSS_list[1 + MAX_PROCS]; // 0 for kernel, 1 for process 1, 2 for process 2, etc...
 #define gdt_flat_dsc(_dSc_, _pVl_, _tYp_) \
    ({                                     \
       (_dSc_)->raw = 0;                   \
@@ -65,6 +69,21 @@ void init_gdt()
    set_es(d0_sel);
    set_fs(d0_sel);
    set_gs(d0_sel);
+
+}
+void init_tss()
+{
+   // I don't know if I should initialize the TSS for the kernel or not
+
+   // set basic TSS structure for ring 0 switching
+   TSS_list[1].s0.esp = get_ebp();
+   TSS_list[1].s0.ss = d0_sel;
+   TSS_list[2].s0.esp = get_ebp();
+   TSS_list[2].s0.ss = d0_sel;
+
+   tss_dsc(&GDT[ts_krn_idx], (offset_t)&(TSS_list[0]));
+   tss_dsc(&GDT[ts_proc1_idx], (offset_t)&(TSS_list[1]));
+   tss_dsc(&GDT[ts_proc2_idx], (offset_t)&(TSS_list[2]));
 }
 
 void call_ring_3(void *ring3_code)
@@ -77,19 +96,18 @@ void call_ring_3(void *ring3_code)
 
    // while(1) { debug("TODO: Stack not retrieved from process 1.\n"); }
    uint32_t ustack = 0x600000;
-
+   
+   // Test: Change GDT to the first process GDT
+   pde32_t *pgd_proc_1 = (pde32_t *)PGD_PROCS_BASE + PAGE_SIZE;
+   set_cr3((uint32_t) pgd_proc_1);
+   while(1){};
    // Set the selectors and the TSS for ring 3
    set_ds(d3_sel);
    set_es(d3_sel);
    set_fs(d3_sel);
    set_gs(d3_sel);
-   TSS.s0.esp = get_ebp();
-   TSS.s0.ss = d0_sel;
-   tss_dsc(&GDT[ts_idx], (offset_t)&TSS);
-   set_tr(ts_sel);
-   // Test: Change GDT to the first process GDT
-   /* uint32_t gdt_proc_1 = PGD_PROCS_BASE + PAGE_SIZE;
-   set_cr3(gdt_proc_1); */
+   set_tr(ts_proc1_sel);
+   
    asm volatile(
        "push %0 \n" // ss
        "push %1 \n" // esp pour du ring 3 !

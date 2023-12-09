@@ -6,11 +6,15 @@
 
 /*
 init_gdt()
-Initialise des descripteurs de code et de données en
+Initialize des descripteurs de code et de données en
 ring 0 et en ring 3.
 */
 void init_gdt();
 
+/*
+Initialize the barebones TSS for the processes
+*/
+void init_tss();
 /*
 Function to switch to ring 3:
 - creation of a process

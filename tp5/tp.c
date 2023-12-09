@@ -23,13 +23,13 @@ void __regparm__(1) syscall_handler(int_ctx_t *ctx) {
 #define d0_idx  2
 #define c3_idx  3
 #define d3_idx  4
-#define ts_idx  5
+#define ts_krn_idx  5
 
 #define c0_sel  gdt_krn_seg_sel(c0_idx)
 #define d0_sel  gdt_krn_seg_sel(d0_idx)
 #define c3_sel  gdt_usr_seg_sel(c3_idx)
 #define d3_sel  gdt_usr_seg_sel(d3_idx)
-#define ts_sel  gdt_krn_seg_sel(ts_idx)
+#define ts_krn_sel  gdt_krn_seg_sel(ts_krn_idx)
 
 seg_desc_t GDT[6];
 tss_t      TSS;
@@ -107,8 +107,8 @@ void tp() {
     set_gs(d3_sel);
     TSS.s0.esp = get_ebp();
     TSS.s0.ss  = d0_sel;
-    tss_dsc(&GDT[ts_idx], (offset_t)&TSS);
-    set_tr(ts_sel);
+    tss_dsc(&GDT[ts_krn_idx], (offset_t)&TSS);
+    set_tr(ts_krn_sel);
     // end Q1
 
     // Q2
