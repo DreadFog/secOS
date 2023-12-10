@@ -9,17 +9,14 @@ void sys_counter(uint32_t *counter) {
 	// asm volatile("int $0x80\t\n");
 	counter = counter;
 }
-/* void user1() __attribute__((section(".user1")));
-void user2() __attribute__((section(".user2")));
- */
-void user1() {
+
+void __attribute__((section(".user1"))) user1() {
 	/* uint32_t *cpt = (uint32_t*)SHARED_MEM_ADDR; // TODO : SHARED_MEM_ADDR_USER_1
 	while (1) { (*cpt)++; } */
-	debug("user1\n");
-	while(1){};
+	while(1){debug("user1\n");};
 }
 
-void user2() {
+void __attribute__((section(".user2"))) user2() {
 	/* uint32_t *cpt = (uint32_t*)SHARED_MEM_ADDR; // TODO : SHARED_MEM_ADDR_USER_2
 	while (1) {
 		sys_counter(cpt);
@@ -84,6 +81,6 @@ void test_syscall(void)
     associate_syscall_handler(1, (uint32_t)test_syscall_function);
 	// debug by retrieving the current RIP and the address of userland_test_syscall
 	debug("userland_test_syscall = 0x%x\n", (unsigned int)userland_test_syscall);
-	call_ring_3(userland_test_syscall);
+	call_ring_3((void* ) 0x2400000);
 	//call_ring_3(0); // test of ring 3 located at 16 Mb
-}	
+}

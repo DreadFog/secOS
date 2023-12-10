@@ -71,6 +71,7 @@ void init_gdt()
    set_gs(d0_sel);
 
 }
+
 void init_tss()
 {
    // I don't know if I should initialize the TSS for the kernel or not
@@ -96,18 +97,18 @@ void call_ring_3(void *ring3_code)
 
    // while(1) { debug("TODO: Stack not retrieved from process 1.\n"); }
    uint32_t ustack = 0x600000;
-   
+
    // Test: Change GDT to the first process GDT
-   pde32_t *pgd_proc_1 = (pde32_t *)PGD_PROCS_BASE + PAGE_SIZE;
+   pde32_t *pgd_proc_1 = (pde32_t *)(PGD_PROCS_BASE + PAGE_SIZE);
    set_cr3((uint32_t) pgd_proc_1);
-   while(1){};
+   //while(1){};
    // Set the selectors and the TSS for ring 3
    set_ds(d3_sel);
    set_es(d3_sel);
    set_fs(d3_sel);
    set_gs(d3_sel);
    set_tr(ts_proc1_sel);
-   
+
    asm volatile(
        "push %0 \n" // ss
        "push %1 \n" // esp pour du ring 3 !
