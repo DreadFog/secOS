@@ -13,7 +13,7 @@
 #define PROCS_PHY_MEM_BASE PG_4M_SIZE * 4 // 16 Mb, 20 Mb, etc...
 #define PROCS_PHY_MEM_SIZE PG_4M_SIZE
 #define MAX_PROCS 2
-#define PROC_VIRT_ENTRYPOINT KERNEL_STACK_BASE // 12 Mb
+#define PROC_VIRT_ENTRYPOINT 0xc00000 // 12 Mb
 
 /*
 Function that will initialize paging in the OS.

@@ -81,6 +81,7 @@ void test_syscall(void)
     associate_syscall_handler(1, (uint32_t)test_syscall_function);
 	// debug by retrieving the current RIP and the address of userland_test_syscall
 	debug("userland_test_syscall = 0x%x\n", (unsigned int)userland_test_syscall);
-	call_ring_3((void* ) 0x2400000);
+	int entrypoint = PROC_VIRT_ENTRYPOINT;
+	call_ring_3((void* ) entrypoint);
 	//call_ring_3(0); // test of ring 3 located at 16 Mb
 }
