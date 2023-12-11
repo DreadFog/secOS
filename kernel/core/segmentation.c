@@ -96,7 +96,7 @@ void call_ring_3(void *ring3_code)
    */
 
    // while(1) { debug("TODO: Stack not retrieved from process 1.\n"); }
-   uint32_t ustack = 0x600000;
+   uint32_t ustack = PG_4M_SIZE * 4 + PG_4M_SIZE; // 20 Mb, soit fin de la pagination user associée au processus 1
 
    // Test: Change GDT to the first process GDT
    pde32_t *pgd_proc_1 = (pde32_t *)(PGD_PROCS_BASE + PAGE_SIZE);
@@ -108,7 +108,6 @@ void call_ring_3(void *ring3_code)
    set_fs(d3_sel);
    set_gs(d3_sel);
    set_tr(ts_proc1_sel);
-
    asm volatile(
        "push %0 \n" // ss
        "push %1 \n" // esp pour du ring 3 !

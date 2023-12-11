@@ -19,7 +19,6 @@ void init_paging()
         // remplissage de la table de page
         for (int i = 0; i < (int)PTE32_PER_PT; i++)
         {
-            debug("Curr max mapped address : %lx\n", (i + j*1024)*PAGE_SIZE);
             pg_set_entry(&curr_ptb[i], PG_KRN | PG_RW, i + j * 1024);
         }
         pg_set_entry(&pgd_kernel[j], PG_KRN | PG_RW, page_nr(curr_ptb));
@@ -32,43 +31,44 @@ void init_paging()
     // Then, 12 to 16 Mb (virtual address) will be mapped to their respective data
     pde32_t *curr_proc_pgd;
     pte32_t *curr_proc_ptb;
-    uint32_t curr_proc_phi_mem_base;
-    required_page_count = PROCS_PHY_MEM_SIZE / PAGE_SIZE;
+    required_page_count = (PROCS_PHY_MEM_SIZE*MAX_PROCS) / PAGE_SIZE;
     debug("Required: %ld\n", required_page_count);
     unsigned long required_ptb_count = required_page_count / PDE32_PER_PD;
     debug("Required: %ld\n", required_ptb_count);
     // initialize the two processes PGDs and PTBs
     for (int k = 0; k < MAX_PROCS; k++)
     {
-        curr_proc_phi_mem_base = PROCS_PHY_MEM_BASE + k * PROCS_PHY_MEM_SIZE;
         curr_proc_pgd = (pde32_t *)(PGD_PROCS_BASE + (k + 1) * PAGE_SIZE); // first PGD was for kernel
         curr_proc_ptb = (pte32_t *)(PGD_PROCS_BASE + (k + 2) * ONE_MB);    // PGDs, then kernel PTB, then processes PTBs hence k+2 * ONE_MB
 
         // initialize the PGD and the related PTBs
         memset((void *)curr_proc_pgd, 0, PAGE_SIZE);
 
-        // kernel pages
+        // kernel pages de 0 à 12
         j = 0;
         while (j < kernel_ptb_count)
         {
             for (int i = 0; i < (int)PTE32_PER_PT; i++)
             {
+                // debug("Curr max mapped address : %lx\n", (i + j*1024)*PAGE_SIZE);
                 pg_set_entry(&curr_proc_ptb[i], PG_KRN | PG_RW, i + j * 1024);
             }
             pg_set_entry(&curr_proc_pgd[j], PG_KRN | PG_RW, page_nr(curr_proc_ptb));
             curr_proc_ptb += PAGE_SIZE;
             j++;
         }
-        // User pages: 16-20 Mb for process 1, 20-24 for process 2 are mapped to 12-16 Mb virt addresses.
-        j = 0;
-        while (j < required_ptb_count)
+        // User pages: proc1 16-20Mb, proc2 20-24Mb
+        // On n'identity mappe pas la mémoire partagée.
+        j += 1;
+        debug("Begin user pages : %lx\n", (j*1024)*PAGE_SIZE);
+        while (j < kernel_ptb_count + required_ptb_count)
         {
             for (int i = 0; i < (int)PTE32_PER_PT; i++)
             {
-                debug("mapped PHY address %lx to VIRT address %lx \n", curr_proc_phi_mem_base + (i + j*1024)*PAGE_SIZE, (j << 22) + (i << 12));
-                pg_set_entry(&curr_proc_ptb[i], PG_USR | PG_RW, curr_proc_phi_mem_base / PAGE_SIZE + i + j * 1024);
+                // debug("Curr max mapped address : %lx\n", (i + j*1024)*PAGE_SIZE);
+                pg_set_entry(&curr_proc_ptb[i], PG_USR | PG_RW, i + j * 1024);
             }
-            pg_set_entry(&curr_proc_pgd[kernel_ptb_count + j], PG_USR | PG_RW, page_nr(curr_proc_ptb));
+            pg_set_entry(&curr_proc_pgd[j], PG_USR | PG_RW, page_nr(curr_proc_ptb));
             curr_proc_ptb += PAGE_SIZE;
             j++;
         }
@@ -76,4 +76,9 @@ void init_paging()
     // enable paging
     uint32_t cr0 = get_cr0();
     set_cr0(cr0 | CR0_PG);
+}
+
+int *get_shared_mem() {
+    // Mapping de l'adresse physique 13 Mb à une adresse virtuelle différente pour chaque processus
+    return (int*)0;
 }

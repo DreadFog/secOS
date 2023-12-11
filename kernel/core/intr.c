@@ -42,13 +42,12 @@ Appel système utilisé par le processus écrivant dans la console la valeur du 
 void __regparm__(1) syscall_finder(int_ctx_t *ctx)
 {
    uint32_t syscall_value = ctx->gpr.eax.raw;
-   debug("==================\nSYSCALL eax = 0x%x\n", syscall_value);
+   debug("==================\nSYSCALL eax = 0x%x\n==================\n", syscall_value);
    if (syscall_value < NR_SYS_CALLS)
    {
       uint32_t handler_address = syscall_table[syscall_value];
       if (handler_address != 0)
       {
-         debug("handler_address = 0x%x\n", handler_address);
          asm volatile("mov %0, %%eax\n"
                       "call *%%eax\n"
                       :

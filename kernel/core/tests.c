@@ -2,6 +2,7 @@
 #include <intr.h>
 #include <segmentation.h>
 #include <paging.h>
+#include <proc.h>
 
 // counter print syscall
 void sys_counter(uint32_t *counter) {
@@ -13,7 +14,9 @@ void sys_counter(uint32_t *counter) {
 void __attribute__((section(".user1"))) user1() {
 	/* uint32_t *cpt = (uint32_t*)SHARED_MEM_ADDR; // TODO : SHARED_MEM_ADDR_USER_1
 	while (1) { (*cpt)++; } */
-	while(1){debug("user1\n");};
+	// while(1){debug("user1\n");}; // impossible car debug en ring0.
+	asm volatile ("int $0x80"::"S"(1)); // Test syscall 1
+	while(1){};
 }
 
 void __attribute__((section(".user2"))) user2() {
@@ -31,6 +34,7 @@ void default_configuration() {
 	init_tss();
     init_paging();
 	init_syscall_table();
+	// init_process_table(NULL);
 }
 
 void some_kernel_function() {
@@ -57,7 +61,7 @@ Tests syscalls
 */
 
 void userland_test_syscall() {
-	debug("userland_test_syscall\n");
+	// debug("userland_test_syscall\n");
 	// asm volatile("mov %eax, %cr0"); // crashes, as we are in ring 3
 	// debug("Before syscall\n");
 	asm volatile ("int $0x80"::"S"(1)); // Test syscall 1
@@ -68,8 +72,8 @@ void userland_test_syscall() {
 
 void test_syscall_function() {
 	// asm volatile("mov %eax, %cr0"); / works, as we are in ring 0
-	//debug("test_syscall_function\n");
-	// debug("I am executed in ring 0\n");
+	debug("test_syscall_function\n");
+	debug("I am executed in ring 0\n");
 }
 
 void test_syscall(void)
@@ -79,9 +83,5 @@ void test_syscall(void)
 	debug("====================================\n");
     default_configuration();
     associate_syscall_handler(1, (uint32_t)test_syscall_function);
-	// debug by retrieving the current RIP and the address of userland_test_syscall
-	debug("userland_test_syscall = 0x%x\n", (unsigned int)userland_test_syscall);
-	int entrypoint = PROC_VIRT_ENTRYPOINT;
-	call_ring_3((void* ) entrypoint);
-	//call_ring_3(0); // test of ring 3 located at 16 Mb
+	call_ring_3(user1);
 }
