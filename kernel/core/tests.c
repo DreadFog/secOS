@@ -34,7 +34,7 @@ void default_configuration() {
 	init_tss();
     init_paging();
 	init_syscall_table();
-	// init_process_table(NULL);
+	init_process_table(NULL);
 }
 
 void some_kernel_function() {
@@ -74,6 +74,7 @@ void test_syscall_function() {
 	// asm volatile("mov %eax, %cr0"); / works, as we are in ring 0
 	debug("test_syscall_function\n");
 	debug("I am executed in ring 0\n");
+	print_processes();
 }
 
 void test_syscall(void)

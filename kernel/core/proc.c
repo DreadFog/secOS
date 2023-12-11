@@ -1,5 +1,4 @@
 #include <proc.h>
-#include <debug.h>
 
 process_t *processes[MAX_PROCS];
 process_t storing_table[MAX_PROCS];
@@ -18,7 +17,7 @@ void init_process_table(void *root_program)
     }
     current_process_index = 0;
     current_process_id = 0;
-    process_t *k = add_process("kernel", 0, NULL);
+    process_t *k = add_process("kernel", 0, root_program);
     k->state = RUNNING; // this one is currently running
     // retrieve the current stack top
     // TODO: retrieve the TSS address and handle it
@@ -26,9 +25,12 @@ void init_process_table(void *root_program)
     processes[k->pid] = k;
 }
 
-void add_to_pointer_list(int pid) {
-    for (int i = 0; i < MAX_PROCS; i++) {
-        if (processes[i] == NULL) {
+void add_to_pointer_list(int pid)
+{
+    for (int i = 0; i < MAX_PROCS; i++)
+    {
+        if (processes[i] == NULL)
+        {
             processes[i] = &storing_table[pid];
             break;
         }
@@ -66,13 +68,18 @@ process_t *add_process(const char *name, pid_t ppid, void *function)
     process->name = name;
     process->ppid = ppid;
     process->pid = pid;
-    if (pid == 0) { // kernel
+    if (pid == 0)
+    { // kernel
         process->stack = KERNEL_STACK_BASE;
     }
-    else {
-        process->stack = PROCS_STACK_HEAP_BASE + PAGE_SIZE * pid;
+    else
+    {
+        process->stack = PROC_MEM_BASE_ADDR + PG_4M_SIZE * pid; // 4Mb memory, stack at the end
     }
+    process->pgd = (pde32_t *)(PGD_PROCS_BASE + (pid) * PAGE_SIZE);
     process->state = READY;
+    process->entrypoint = function;
+    add_to_pointer_list(pid);
     return process;
 }
 
@@ -108,7 +115,8 @@ void print_processes()
         {
             debug("Process %s, pid %d, ppid %d\n", processes[i]->name, processes[i]->pid, processes[i]->ppid);
             debug("Stack pointer %p\n", processes[i]->sp);
-            debug("Registers: "); debug("TODO !\n");
+            debug("Registers: ");
+            debug("TODO !\n");
             debug("==========\n");
         }
     }
@@ -130,7 +138,7 @@ void scheduler()
         {
             processes[current_process_index]->state = RUNNING;
             current_process_id = processes[current_process_index]->pid;
-            //ctx_sw(current_process->ctx, processes[current_process_index]->ctx);
+            // ctx_sw(current_process->ctx, processes[current_process_index]->ctx);
             debug("Switching from process %d to process %d\n", current_process->pid, processes[current_process_index]->pid);
             debug("TODO\n");
             break;
@@ -156,10 +164,40 @@ void block_current_process()
 void unblock_process(pid_t pid)
 {
     storing_table[pid].state = READY;
-    add_to_pointer_list(pid);   
+    add_to_pointer_list(pid);
 }
 
 int get_current_process_id()
 {
     return current_process_id;
+}
+
+void call_ring_3(void *ring3_code)
+{
+    // norm: switching to ring 3 will be done using a new process associated with the given code
+    /*
+    TODO: create a process list, process 0 will be the kernel, the next available process
+    will be associated to the provided ring3 code.
+    */
+    process_t * ring3_process = add_process("ring3", 0, ring3_code);
+    // Test: Change GDT to the first process GDT
+    set_cr3((uint32_t)ring3_process->pgd);
+    // while(1){};
+    //  Set the selectors and the TSS for ring 3
+    set_ds(d3_sel);
+    set_es(d3_sel);
+    set_fs(d3_sel);
+    set_gs(d3_sel);
+    set_tr(ts_proc1_sel);
+    asm volatile(
+        "push %0 \n" // ss
+        "push %1 \n" // esp pour du ring 3 !
+        "pushf   \n" // eflags
+        "push %2 \n" // cs
+        "push %3 \n" // eip
+        "iret" ::
+            "i"(d3_sel),
+        "m"(ring3_process->stack),
+        "i"(c3_sel),
+        "r"(ring3_process->entrypoint));
 }

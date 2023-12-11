@@ -1,7 +1,6 @@
 #ifndef __PROC_H__
 #define __PROC_H__
-#include <paging.h>
-
+#include <segmentation.h>
 typedef uint32_t pid_t;
 
 typedef enum {
@@ -24,6 +23,8 @@ typedef struct process_t {
     pid_t pid;
     pid_t ppid;
     uint8_t is_available:1;
+    pde32_t *pgd;
+    void *entrypoint;
 } process_t;
 
 void init_process_table(void *root_program);
@@ -35,5 +36,14 @@ void print_processes();
 void scheduler();
 void stop_current_process();
 int get_current_process_id();
+
+
+/*
+Function to switch to ring 3:
+- creation of a process
+- association of the given address to the rip of the process
+- usage of the newly created process stack
+*/
+void call_ring_3(void *ring3_code);
 
 #endif
