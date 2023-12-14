@@ -9,6 +9,7 @@
 #include <debug.h>
 #include <info.h>
 #include <paging.h>
+#include <asm.h>
 
 #define IDT_NR_DESC                   256
 #define IDT_ISR_ALGN                  16
@@ -79,7 +80,7 @@ void intr_init();
 void intr_hdlr(int_ctx_t*) __regparm__(1);
 void handler_IT_timer();
 void handler_sys_counter();
-
+void handler_sys_terminate();
 
 // everything related to syscalls
 #define NR_SYS_CALLS 2

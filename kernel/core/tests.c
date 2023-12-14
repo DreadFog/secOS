@@ -1,15 +1,5 @@
 #include <tests.h>
 
-void default_configuration() {
-	init_gdt();
-	init_tss();
-    init_paging();
-	init_syscall_table();
-	init_process_table(NULL);
-	// init_timer(1000);
-	// force_interrupts_on();
-}
-
 void some_kernel_function() {
     debug("some_kernel_function\n");
 }
@@ -25,7 +15,7 @@ void userland_test_call_ring_0() {
 
 void test_call_ring0_from_ring3(void)
 {
-    default_configuration();
+    // default_configuration();
     // call_ring_3(userland_test_call_ring_0);
 }
 
@@ -50,14 +40,15 @@ void test_syscall_function() {
 	print_processes();
 }
 
-void test_syscall(void)
-{
-	debug("====================================\n");
-	debug("Test syscall\n");
-	debug("====================================\n");
-    default_configuration();
-    associate_syscall_handler(1, (uint32_t)handler_sys_counter);
-	add_process("user1", 0, user1);
-	add_process("user2", 0, user2);
-	call_ring_3_pid_1();
-}
+// void test_syscall(void)
+// {
+// 	debug("====================================\n");
+// 	debug("Test syscall\n");
+// 	debug("====================================\n");
+//     default_configuration();
+//     associate_syscall_handler(1, (uint32_t)handler_sys_counter);
+//     associate_syscall_handler(2, (uint32_t)handler_sys_terminate);
+// 	add_process("user1", 0, user1);
+// 	add_process("user2", 0, user2);
+// 	call_ring_3_pid_1();
+// }

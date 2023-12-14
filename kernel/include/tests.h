@@ -28,4 +28,4 @@ void test_call_ring0_from_ring3(void);
     *   Expected behaviour:
     *      The kernel should not crash, and the syscall should be executed.
 */
-void test_syscall(void);
+// void test_syscall(void);

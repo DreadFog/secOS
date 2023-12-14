@@ -18,6 +18,11 @@ void handler_sys_counter()
    set_cr3((uint32_t) cr3.raw);
 }
 
+void handler_sys_terminate()  {
+   debug("Halting QEMU ...\n");
+   halt();
+}
+
 // syscalls
 static uint32_t syscall_table[NR_SYS_CALLS];
 

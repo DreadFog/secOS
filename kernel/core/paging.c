@@ -55,7 +55,7 @@ void init_paging()
         j = 0;
         while (j < kernel_ptb_count)
         {
-            debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
+            // debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
             for (int i = 0; i < (int)PTE32_PER_PT; i++)
             {
                 // debug("Curr max mapped address : %lx\n", (i + j*1024)*PAGE_SIZE);
@@ -65,7 +65,7 @@ void init_paging()
             curr_proc_ptb += PAGE_SIZE;
             j++;
         }
-        debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
+        // debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
         // shared memory: only one entry in the page table
         uint32_t shared_int_addr = SHARED_INT_ADDR_KRN + (k+1)*ONE_MB; // that way, proc1 will have 14 Mb, and proc2 15 Mb
         pg_set_entry(&curr_proc_pgd[j], PG_USR | PG_RW, page_nr(curr_proc_ptb));
