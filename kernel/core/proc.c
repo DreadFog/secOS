@@ -76,6 +76,12 @@ process_t *add_process(const char *name, pid_t ppid, void *function)
     {
         process->stack = PROC_MEM_BASE_ADDR + PG_4M_SIZE * pid; // 4Mb memory, stack at the end
     }
+    for (int i = 0; i < CTX_SIZE; i++)
+    {
+        process->ctx[i] = 0;
+    }
+    process->sp = (uint32_t *)(process->stack);
+    process->ctx[ESP] = (uint32_t)process->sp;
     process->pgd = (pde32_t *)(PGD_PROCS_BASE + (pid) * PAGE_SIZE);
     process->state = READY;
     process->entrypoint = function;
@@ -138,9 +144,10 @@ void scheduler()
         {
             processes[current_process_index]->state = RUNNING;
             current_process_id = processes[current_process_index]->pid;
-            // ctx_sw(current_process->ctx, processes[current_process_index]->ctx);
+            // PGD switch
+            set_cr3((uint32_t)(processes[current_process_index]->pgd));
+            ctx_sw(current_process->ctx, processes[current_process_index]->ctx);
             debug("Switching from process %d to process %d\n", current_process->pid, processes[current_process_index]->pid);
-            debug("TODO\n");
             break;
         }
     }
@@ -172,14 +179,14 @@ int get_current_process_id()
     return current_process_id;
 }
 
-void call_ring_3(void *ring3_code)
+void call_ring_3_pid_1()
 {
     // norm: switching to ring 3 will be done using a new process associated with the given code
     /*
     TODO: create a process list, process 0 will be the kernel, the next available process
     will be associated to the provided ring3 code.
     */
-    process_t * ring3_process = add_process("ring3", 0, ring3_code);
+    process_t * ring3_process = get_process_by_pid(1);
     // Test: Change GDT to the first process GDT
     set_cr3((uint32_t)ring3_process->pgd);
     // while(1){};

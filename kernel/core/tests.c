@@ -1,8 +1,4 @@
-#include <debug.h>  
-#include <intr.h>
-#include <segmentation.h>
-#include <paging.h>
-#include <proc.h>
+#include <tests.h>
 
 // counter print syscall
 void sys_counter(uint32_t *counter) {
@@ -35,6 +31,8 @@ void default_configuration() {
     init_paging();
 	init_syscall_table();
 	init_process_table(NULL);
+	// init_timer(1000);
+	// force_interrupts_on();
 }
 
 void some_kernel_function() {
@@ -53,7 +51,7 @@ void userland_test_call_ring_0() {
 void test_call_ring0_from_ring3(void)
 {
     default_configuration();
-    call_ring_3(userland_test_call_ring_0);
+    // call_ring_3(userland_test_call_ring_0);
 }
 
 /*
@@ -84,5 +82,7 @@ void test_syscall(void)
 	debug("====================================\n");
     default_configuration();
     associate_syscall_handler(1, (uint32_t)test_syscall_function);
-	call_ring_3(user1);
+	add_process("user1", 0, user1);
+	add_process("user2", 0, user2);
+	call_ring_3_pid_1();
 }

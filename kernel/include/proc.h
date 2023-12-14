@@ -3,6 +3,10 @@
 #include <segmentation.h>
 typedef uint32_t pid_t;
 
+#define CTX_SIZE 5
+typedef enum { EBX, ESP, EBP, ESI, EDI } registry_t;
+
+
 typedef enum {
     RUNNING,
     READY,
@@ -18,6 +22,7 @@ typedef struct resource_t {
 typedef struct process_t {
     const char *name;
     uint32_t stack;
+    uint32_t ctx[CTX_SIZE];
     uint32_t *sp; // stack pointer
     PROCESS_STATE state;
     pid_t pid;
@@ -44,6 +49,6 @@ Function to switch to ring 3:
 - association of the given address to the rip of the process
 - usage of the newly created process stack
 */
-void call_ring_3(void *ring3_code);
+void call_ring_3_pid_1();
 
 #endif

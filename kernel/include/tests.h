@@ -1,3 +1,10 @@
+#include <debug.h>  
+#include <intr.h>
+#include <segmentation.h>
+#include <paging.h>
+#include <proc.h>
+#include <time.h>
+#include <asm.h>
 /*
     * tests.h
     *

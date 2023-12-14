@@ -43,6 +43,7 @@ core_obj   :=	entry.o \
 		tests.o \
 		segmentation.o \
 		proc.o \
+		ctx_sw.o \
 
 objects    := $(addprefix $(CORE), $(core_obj))
 
