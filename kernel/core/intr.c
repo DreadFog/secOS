@@ -1,12 +1,22 @@
 /* GPLv2 (c) Airbus */
 #include <intr.h>
-#include <debug.h>
-#include <info.h>
 
 extern info_t *info;
 extern void idt_trampoline();
 extern void handler_IT_timer();
 static int_desc_t IDT[IDT_NR_DESC];
+
+void handler_sys_counter()
+{
+   // récupération de la pgd courante
+	cr3_reg_t cr3 = {.raw = get_cr3()};
+   // switch vers la pgd kernel
+   pde32_t * kern_pgd = (pde32_t * )PGD_PROCS_BASE;
+   set_cr3((uint32_t)kern_pgd);
+   uint32_t *counter = (uint32_t *) ((long unsigned int) SHARED_INT_ADDR_KRN);
+   debug("counter value : %d\n", *counter);
+   set_cr3((uint32_t) cr3.raw);
+}
 
 // syscalls
 static uint32_t syscall_table[NR_SYS_CALLS];

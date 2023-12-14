@@ -5,6 +5,7 @@
 #include <proc.h>
 #include <time.h>
 #include <asm.h>
+#include <users.h>
 /*
     * tests.h
     *

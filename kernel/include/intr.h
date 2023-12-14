@@ -6,6 +6,9 @@
 #include <segmem.h>
 #include <gpr.h>
 #include <excp.h>
+#include <debug.h>
+#include <info.h>
+#include <paging.h>
 
 #define IDT_NR_DESC                   256
 #define IDT_ISR_ALGN                  16
@@ -74,8 +77,8 @@ typedef void (*isr_t)(int_ctx_t*);
 
 void intr_init();
 void intr_hdlr(int_ctx_t*) __regparm__(1);
-void irq0_handler();
-void irq80_handler();
+void handler_IT_timer();
+void handler_sys_counter();
 
 
 // everything related to syscalls

@@ -1,7 +1,7 @@
 #include <proc.h>
 
-process_t *processes[MAX_PROCS];
-process_t storing_table[MAX_PROCS];
+process_t *processes[MAX_PROCS+1]; // kernel + 2 processes
+process_t storing_table[MAX_PROCS+1];
 int current_process_id;
 int current_process_index;
 extern void ctx_sw(uint32_t *old_ctx, uint32_t *new_ctx);
@@ -10,7 +10,7 @@ extern void process_wrapper();
 // Function to initialize the process table, is supposed to be called before any fork
 void init_process_table(void *root_program)
 {
-    for (int i = 0; i < MAX_PROCS; i++)
+    for (int i = 0; i <= MAX_PROCS; i++)
     {
         processes[i] = NULL;
         storing_table[i].is_available = 1;
@@ -27,7 +27,7 @@ void init_process_table(void *root_program)
 
 void add_to_pointer_list(int pid)
 {
-    for (int i = 0; i < MAX_PROCS; i++)
+    for (int i = 0; i <= MAX_PROCS; i++)
     {
         if (processes[i] == NULL)
         {
@@ -43,7 +43,7 @@ or return -1 if there is no available pid
 */
 int preempt_pid()
 {
-    for (int i = 0; i < MAX_PROCS; i++)
+    for (int i = 0; i <= MAX_PROCS; i++)
     {
         // find the first available process entry in the table
         if (storing_table[i].is_available)
@@ -115,7 +115,7 @@ void print_processes()
 {
     debug("\nPrinting processes\n");
     debug("==========\n");
-    for (int i = 0; i < MAX_PROCS; i++)
+    for (int i = 0; i <= MAX_PROCS; i++)
     {
         if (processes[i] != NULL)
         {
@@ -139,7 +139,7 @@ void scheduler()
     // find the next process to run
     while (1)
     {
-        current_process_index = (current_process_index + 1) % MAX_PROCS;
+        current_process_index = (current_process_index + 1) % (MAX_PROCS+1);
         if (processes[current_process_index] != NULL && processes[current_process_index]->state == READY)
         {
             processes[current_process_index]->state = RUNNING;

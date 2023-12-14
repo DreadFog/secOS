@@ -44,6 +44,7 @@ core_obj   :=	entry.o \
 		segmentation.o \
 		proc.o \
 		ctx_sw.o \
+		users.o
 
 objects    := $(addprefix $(CORE), $(core_obj))
 

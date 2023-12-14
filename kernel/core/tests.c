@@ -1,30 +1,5 @@
 #include <tests.h>
 
-// counter print syscall
-void sys_counter(uint32_t *counter) {
-  	// counter est une @virtuelle ring 3
-	// asm volatile("int $0x80\t\n");
-	counter = counter;
-}
-
-void __attribute__((section(".user1"))) user1() {
-	/* uint32_t *cpt = (uint32_t*)SHARED_MEM_ADDR; // TODO : SHARED_MEM_ADDR_USER_1
-	while (1) { (*cpt)++; } */
-	// while(1){debug("user1\n");}; // impossible car debug en ring0.
-	asm volatile ("int $0x80"::"S"(1)); // Test syscall 1
-	while(1){};
-}
-
-void __attribute__((section(".user2"))) user2() {
-	/* uint32_t *cpt = (uint32_t*)SHARED_MEM_ADDR; // TODO : SHARED_MEM_ADDR_USER_2
-	while (1) {
-		sys_counter(cpt);
-	}
-   */
-  debug("user2\n");
-  while(1){};
-}
-
 void default_configuration() {
 	init_gdt();
 	init_tss();
@@ -81,7 +56,7 @@ void test_syscall(void)
 	debug("Test syscall\n");
 	debug("====================================\n");
     default_configuration();
-    associate_syscall_handler(1, (uint32_t)test_syscall_function);
+    associate_syscall_handler(1, (uint32_t)handler_sys_counter);
 	add_process("user1", 0, user1);
 	add_process("user2", 0, user2);
 	call_ring_3_pid_1();
