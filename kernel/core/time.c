@@ -1,27 +1,35 @@
+/**
+ * 		time.c
+ * File intializing and defining the switchover between processes
+ * using the clock/time as a basis.
+ *  
+*/
+
 #include <time.h>
 #include <intr.h>
 #include <debug.h>
+
 extern void handler_IT_timer();
 
-uint32_t curr_time = 0;
+uint32_t curr_time = 0; // Current time in milliseconds
 uint32_t f_osc = 0x1234BD; // 1.19 MHz
-uint32_t f = 1000;
-time_t time;
-int millis_per_sec;
-int millis_per_min;
-int millis_per_hour;
-int millis_per_day;
+uint32_t const clock_freq = 1000;
+time_t time; // Current time represented as hours/minutes/seconds
+int const millis_per_sec = clock_freq;
+int const millis_per_min = 60 * millis_per_sec;
+int const millis_per_hour = 60 * millis_per_min;
 
-void init_timer(uint32_t clock_freq)
+/**
+ * init_timer()
+ * (Re)initialize the timer, using the PIC. 
+*/
+void init_timer()
 {
-    millis_per_sec = clock_freq;
-    millis_per_min = 60 * millis_per_sec;
-    millis_per_hour = 60 * millis_per_min;
     curr_time = 0;
     time.seconds = 0;
     time.minutes = 0;
     time.hours = 0;
-    f = f_osc / clock_freq;
+    uint32_t f = f_osc / clock_freq;
     // PIC configuration
     outb(0x34, 0x43);
     // freq saving
@@ -29,17 +37,25 @@ void init_timer(uint32_t clock_freq)
     outb(f >> 8, 0x40);
     // activating the timer IT
     outb(inb(0x21) & 0xfe, 0x21);
-    // init_irq_entry(0x20, (uint32_t)handler_IT_timer); // taken care of during init_intr()
 }
 
+/**
+ * update_time()
+ * Converts current time curr_time to "beautified" time.
+*/
 void update_time()
 {
     time.hours = curr_time / millis_per_hour;
     time.minutes = (curr_time % millis_per_hour) / millis_per_min;
     time.seconds = (curr_time % millis_per_min) / millis_per_sec;
-    debug("%d:%d:%d\n", time.hours, time.minutes, time.seconds);
 }
 
+/**
+ * handler_timer()
+ * Function that gets called every millisecond (at clock_freq).
+ * It is responsible for updating the time and calling the scheduling
+ * function when it is deemed appropriate.
+*/
 void handler_timer()
 {
     // ack IT
@@ -50,7 +66,9 @@ void handler_timer()
     // call the scheduler every second
     if (curr_time % millis_per_sec == 0)
     {
+        debug("%d:%d:%d\n", time.hours, time.minutes, time.seconds);
         // scheduler();
-        debug("scheduler\n");
+        debug("scheduler should be called now\n");
+        
     }
 }

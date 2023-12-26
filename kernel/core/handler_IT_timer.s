@@ -1,9 +1,9 @@
 .text
     .globl handler_IT_timer
 handler_IT_timer:
-# sauvegarde des registres
+# Registers saving
     pusha
     call handler_timer
-# restauration des registres
+# Registers retrieval
     popa
     iret

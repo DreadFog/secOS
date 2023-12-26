@@ -1,8 +1,19 @@
+/**
+ * 		segmentation.c
+ * File defining functions used for the segmentation.
+ *  
+*/
+
 #include <segmentation.h>
 
 seg_desc_t GDT[8];
 tss_t TSS_list[1 + MAX_PROCS]; // 0 for kernel, 1 for process 1, 2 for process 2, etc...
 
+/**
+ * init_gdt()
+ * Initialize the GDT and associated register GDTR as well as
+ * all control registers.
+*/
 void init_gdt()
 {
    gdt_reg_t gdtr;
@@ -28,9 +39,13 @@ void init_gdt()
 
 }
 
+/**
+ * init_tss()
+ * Initialize the (barebones) TSS for the processses with esp and ss and adds it in the GDT.
+*/
 void init_tss()
 {
-   // I don't know if I should initialize the TSS for the kernel or not
+   // TODO: Should we initialize the TSS for the kernel or not?
 
    // set basic TSS structure for ring 0 switching
    TSS_list[1].s0.esp = get_ebp();
@@ -43,9 +58,15 @@ void init_tss()
    tss_dsc(&GDT[ts_proc2_idx], (offset_t)&(TSS_list[2]));
 }
 
+/**
+ * call_ring_3_bak()
+ * Allows to call code from ring3.
+ * Parameter:
+ *    - void *ring3_code, the address of the code in ring 3.
+ * As a norm, switching to ring 3 will be done using a new process associated with the given code.
+*/
 void call_ring_3_bak(void *ring3_code)
 {
-   // norm: switching to ring 3 will be done using a new process associated with the given code
    // TODO: create a process list, process 0 will be the kernel, the next available process
    // will be associated to the provided ring3 code.
   

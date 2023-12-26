@@ -16,5 +16,11 @@ typedef struct {
     uint32_t minutes;
     uint32_t hours;
 } time_t;
-void init_timer(uint32_t clock_freq);
+
+/**
+ * init_timer()
+ * (Re)initialize the timer, using the PIC. 
+*/
+void init_timer();
+
 void handler_timer();

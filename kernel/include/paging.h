@@ -21,12 +21,15 @@
 #define SHARED_INT_PROC1_ADDR SHARED_MEM_BASE_ADDR + 2 * ONE_MB // 14 Mb
 #define SHARED_INT_PROC2_ADDR SHARED_MEM_BASE_ADDR + 3 *ONE_MB // 15 Mb
 
-/*
-Function that will initialize paging in the OS.
-    - PGD pre-allocation for the kernel + MAX_PROCS user processes (more processes would simply require more memory allocated to the kernel)
-    - PTB pre-allocation for the kernel + MAX_PROCS user processes
-    - identity-mapping for the kernel + processes
-    - Reservation of a shared-memory chunk that will not be identity-mapped
+/**
+ * init_paging()
+ * Initialize the paging and memory translation: kernel and processus PGD & PTBs.
+ * The paging is so that we have:
+ *  - PGD pre-allocation for the kernel + MAX_PROCS user processes
+        (more processes would simply require more memory allocated to the kernel)
+ *  - PTB pre-allocation for the kernel + MAX_PROCS user processes
+ *  - identity-mapping for the kernel + processes
+ *  - Reservation of a shared-memory chunk that will not be identity-mapped
 */
 void init_paging();
 #endif

@@ -1,3 +1,9 @@
+/**
+ * 		tests.c
+ * File used for various tests (unit and integration tests).
+ *  
+*/
+
 #include <tests.h>
 
 void some_kernel_function() {

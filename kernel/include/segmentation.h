@@ -51,15 +51,16 @@
 
 // Publicly accessible functions
 
-/*
-init_gdt()
-Initialize des descripteurs de code et de données en
-ring 0 et en ring 3.
+/**
+ * init_gdt()
+ * Initialize the GDT and associated register GDTR as well as
+ * all control registers.
 */
 void init_gdt();
 
-/*
-Initialize the barebones TSS for the processes
+/**
+ * init_tss()
+ * Initialize the (barebones) TSS for the processses with esp and ss and adds it in the GDT.
 */
 void init_tss();
 

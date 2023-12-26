@@ -1,5 +1,21 @@
+/**
+ * 		paging.c
+ * Functions used for paging, for now only used to initialize the paging.
+ * 
+*/
+
 #include <paging.h>
 
+/**
+ * init_paging()
+ * Initialize the paging and memory translation: kernel and processus PGD & PTBs.
+ * The paging is so that we have:
+ *  - PGD pre-allocation for the kernel + MAX_PROCS user processes
+        (more processes would simply require more memory allocated to the kernel)
+ *  - PTB pre-allocation for the kernel + MAX_PROCS user processes
+ *  - identity-mapping for the kernel + processes
+ *  - Reservation of a shared-memory chunk that will not be identity-mapped
+*/
 void init_paging()
 {
     // Initialize the kernel PGD and PTBs
@@ -11,15 +27,12 @@ void init_paging()
     // Note: we also identity map the shared memory for the kernel,
     // as it will have to print the value of the shared int
 
-    unsigned long required_page_count = (KERNEL_STACK_BASE + PG_4M_SIZE) / PAGE_SIZE; // 4M for the shared memory
-    // debug("Required kernel 1: %ld\n", required_page_count);
+    unsigned long required_page_count = (KERNEL_STACK_BASE + PG_4M_SIZE) / PAGE_SIZE; // 4Mb for the shared memory
     unsigned long kernel_ptb_count = required_page_count / PDE32_PER_PD;
-    // debug("Required kernel 2: %ld\n", kernel_ptb_count);
-    // while(1) {};
     unsigned long j = 0;
     while (j < kernel_ptb_count)
     {
-        // remplissage de la table de page
+        // Page table filling
         for (int i = 0; i < (int)PTE32_PER_PT; i++)
         {
             pg_set_entry(&curr_ptb[i], PG_KRN | PG_RW, i + j * 1024);
@@ -36,12 +49,9 @@ void init_paging()
     pte32_t *curr_proc_ptb;
     required_page_count = (PROCS_PHY_MEM_SIZE*MAX_PROCS) / PAGE_SIZE;
     unsigned long twelve_first_mbs = (KERNEL_STACK_BASE) / PAGE_SIZE; // 4M for the shared memory
-    // debug("Required kernel 1: %ld\n", required_page_count);
     kernel_ptb_count = twelve_first_mbs / PDE32_PER_PD;
-
-    // debug("Required: %ld\n", required_page_count);
     unsigned long required_ptb_count = required_page_count / PDE32_PER_PD;
-    // debug("Required: %ld\n", required_ptb_count);
+
     // initialize the two processes PGDs and PTBs
     for (int k = 0; k < MAX_PROCS; k++)
     {
@@ -55,17 +65,15 @@ void init_paging()
         j = 0;
         while (j < kernel_ptb_count)
         {
-            // debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
             for (int i = 0; i < (int)PTE32_PER_PT; i++)
             {
-                // debug("Curr max mapped address : %lx\n", (i + j*1024)*PAGE_SIZE);
                 pg_set_entry(&curr_proc_ptb[i], PG_KRN | PG_RW, i + j * 1024);
             }
             pg_set_entry(&curr_proc_pgd[j], PG_KRN | PG_RW, page_nr(curr_proc_ptb));
             curr_proc_ptb += PAGE_SIZE;
             j++;
         }
-        // debug("curr_proc_ptb: 0x%lx\n", (long int) curr_proc_ptb);
+        
         // shared memory: only one entry in the page table
         uint32_t shared_int_addr = SHARED_INT_ADDR_KRN + (k+1)*ONE_MB; // that way, proc1 will have 14 Mb, and proc2 15 Mb
         pg_set_entry(&curr_proc_pgd[j], PG_USR | PG_RW, page_nr(curr_proc_ptb));
@@ -76,8 +84,7 @@ void init_paging()
         j++;
 
         // User pages: proc1 16-20Mb, proc2 20-24Mb
-        // On n'identity mappe pas la mémoire partagée.
-        debug("Begin user pages : %lx\n", (j*1024)*PAGE_SIZE);
+        // Only shared memory is not identity mapped
         while (j < kernel_ptb_count + required_ptb_count)
         {
             for (int i = 0; i < (int)PTE32_PER_PT; i++)
@@ -90,12 +97,8 @@ void init_paging()
             j++;
         }
     }
+
     // enable paging
     uint32_t cr0 = get_cr0();
     set_cr0(cr0 | CR0_PG);
-}
-
-int *get_shared_mem() {
-    // Mapping de l'adresse physique 13 Mb à une adresse virtuelle différente pour chaque processus
-    return (int*)0;
 }
