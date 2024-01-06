@@ -1,3 +1,9 @@
+/**
+ * 		proc.c
+ * File to manage processus in secOS.
+ *  
+*/
+
 #include <proc.h>
 
 process_t *processes[MAX_PROCS+1]; // kernel + 2 processes
@@ -7,7 +13,13 @@ int current_process_index;
 extern void ctx_sw(uint32_t *old_ctx, uint32_t *new_ctx);
 extern void process_wrapper();
 
-// Function to initialize the process table, is supposed to be called before any fork
+/**
+ * init_process_table
+ * Initialize the process table.
+ * One should take care to call it before doing any fork.
+ * Parameters:
+ *  - root_program, the root adress of the program belonging to the process.
+*/
 void init_process_table(void *root_program)
 {
     for (int i = 0; i <= MAX_PROCS; i++)
@@ -21,10 +33,12 @@ void init_process_table(void *root_program)
     k->state = RUNNING; // this one is currently running
     // retrieve the current stack top
     // TODO: retrieve the TSS address and handle it
-    debug("TODO: retrieve the TSS address and handle it\n");
     processes[k->pid] = k;
 }
 
+/**
+ * add_to_pointer_list
+*/
 void add_to_pointer_list(int pid)
 {
     for (int i = 0; i <= MAX_PROCS; i++)
@@ -37,9 +51,10 @@ void add_to_pointer_list(int pid)
     }
 }
 
-/*
-retrieve the first available pid in the table
-or return -1 if there is no available pid
+/**
+ * preempt_pid
+ * Retrieves the first available pid in the table
+ * or return -1 if there is no available pid
 */
 int preempt_pid()
 {
@@ -56,8 +71,16 @@ int preempt_pid()
     return -1;
 }
 
+/**
+ * add_process
+ * Call the wrapper add_process and put to ebx the address of the function
+ * Parameters:
+ *      - name, the name of the process to add
+ *      - ppid, the parent pid of the process
+ *      - function, the adress to the program of the process 
+*/
 process_t *add_process(const char *name, pid_t ppid, void *function)
-{ // call the wrapper add_process and put to ebx the address of the function
+{
     int pid = preempt_pid();
     if (pid == -1)
     {
@@ -89,17 +112,33 @@ process_t *add_process(const char *name, pid_t ppid, void *function)
     return process;
 }
 
+/**
+ * remove_process
+ * Deletes the process from the process table
+ * Parameter:
+ *      - process, the process to remove
+*/
 void remove_process(process_t *process)
 {
     processes[process->pid] = NULL;
     process->is_available = 1;
 }
 
+/**
+ * get_process_by_pid
+ * Fetchs the process associatid to a pid in the process table
+ * Parameter:
+ *       - pid, the pid of the process to fetch
+*/
 process_t *get_process_by_pid(pid_t pid)
 {
     return processes[pid];
 }
 
+/**
+ * exec_fork
+ * [Unused] function, would be used if we needed to fork processes;
+*/
 int exec_fork(const char *name, void *function)
 {
     process_t *process = add_process(name, current_process_id, function);
@@ -111,6 +150,10 @@ int exec_fork(const char *name, void *function)
     return process->pid;
 }
 
+/**
+ * print_processes
+ * Prints the processes context.
+*/
 void print_processes()
 {
     debug("\nPrinting processes\n");
@@ -128,8 +171,13 @@ void print_processes()
     }
 }
 
+/**
+ * scheduler
+ * The scheduler alternates between ready processes in a
+ * ring architecture.
+*/
 void scheduler()
-{ // scheduler that alternates between ready processes
+{
     debug("Scheduler called while process of pid %d is active\n", current_process_id);
     process_t *current_process = processes[current_process_index];
     if (current_process != NULL)
@@ -154,6 +202,10 @@ void scheduler()
     // if we still didn't find any process, we keep the current one
 }
 
+/**
+ * stop_current_process
+ * Stops the current process
+*/
 void stop_current_process()
 {
     process_t *current_process = processes[current_process_index];
@@ -161,6 +213,10 @@ void stop_current_process()
     scheduler();
 }
 
+/**
+ * block_current_process
+ * Changes a process's state in the BLOCKED.
+*/
 void block_current_process()
 {
     process_t *current_process = processes[current_process_index];
@@ -168,24 +224,36 @@ void block_current_process()
     scheduler();
 }
 
+/**
+ * unblock_process
+ * Changes a process's state to READY
+*/
 void unblock_process(pid_t pid)
 {
     storing_table[pid].state = READY;
     add_to_pointer_list(pid);
 }
 
+/**
+ * get_current_process_id
+ * Fetchs the id of the current process running.
+*/
 int get_current_process_id()
 {
     return current_process_id;
 }
 
+/**
+ * Function to switch to ring 3:
+ * - creation of a process
+ * - association of the given address to the rip of the process
+ * - usage of the newly created process stack
+ * Switching to ring 3 will be done using a new process associated with the given code
+*/
 void call_ring_3_pid_1()
 {
-    // norm: switching to ring 3 will be done using a new process associated with the given code
-    /*
-    TODO: create a process list, process 0 will be the kernel, the next available process
-    will be associated to the provided ring3 code.
-    */
+    /* TODO: create a process list, process 0 will be the kernel, the next available process
+     * will be associated to the provided ring3 code. */
     process_t * ring3_process = get_process_by_pid(1);
     // Test: Change GDT to the first process GDT
     set_cr3((uint32_t)ring3_process->pgd);

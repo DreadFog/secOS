@@ -90,7 +90,7 @@ void syscall_isr()
  void syscall_finder(int_ctx_t *ctx)
  {
    uint32_t syscall_value = ctx->gpr.eax.raw;
-   debug("==================\nSYSCALL eax = 0x%x\n==================\n", syscall_value);
+   // debug("==================\nSYSCALL eax = 0x%x\n==================\n", syscall_value);
    if (syscall_value < NR_SYS_CALLS)
    {
       uint32_t handler_address = syscall_table[syscall_value];

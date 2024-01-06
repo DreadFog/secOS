@@ -37,8 +37,8 @@ void tp() {
 	debug("                 TP                 \n");
 	debug("====================================\n");
     default_configuration();
-    associate_syscall_handler(0, (uint32_t)handler_sys_terminate);
-    associate_syscall_handler(1, (uint32_t)handler_sys_counter);
+    associate_syscall_handler(0, (uint32_t)handler_sys_counter);
+    // associate_syscall_handler(0, (uint32_t)handler_sys_terminate); // we can add other syscalls if needed (with different syscall values)
 	add_process("user1", 0, user1);
 	add_process("user2", 0, user2);
 	call_ring_3_pid_1();

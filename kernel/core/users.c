@@ -16,7 +16,9 @@ void user1() {
 	uint32_t *cpt = (uint32_t *) ((long unsigned int) SHARED_INT_PROC1_ADDR);
 	while (1) {
         (*cpt)++;
-        asm volatile("int $0x80\t\n"::"S"(1));
+        // Used to debug the counter:
+        if (*cpt % 0xfffffff == 0)
+            asm volatile("int $0x80\t\n"::"S"(1));
     }
 }
 
@@ -27,7 +29,6 @@ void user1() {
 */
 void user2() {
     // counter print syscall
-    debug("user2\n");
     void sys_counter() {
         asm volatile("int $0x80\t\n"::"S"(1));
     }

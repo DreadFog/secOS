@@ -66,9 +66,8 @@ void handler_timer()
     // call the scheduler every second
     if (curr_time % millis_per_sec == 0)
     {
-        debug("%d:%d:%d\n", time.hours, time.minutes, time.seconds);
-        // scheduler();
-        debug("scheduler should be called now\n");
-        
+        debug("%dh:%dm:%ds\n", time.hours, time.minutes, time.seconds);
+        // TODO: (fix and) call scheduler();
+        //debug("scheduler should be called now\n");
     }
 }
