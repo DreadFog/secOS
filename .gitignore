@@ -1,3 +1,5 @@
 *.o
 .vscode
 *.elf
+*patch
+*.tar.gz
